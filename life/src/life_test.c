@@ -61,7 +61,7 @@ int main(void)
 	// Testing clear_world
 
 	// World with virtual size 3 x 5 and effective size 5 x 7
-	int small_world[][MAX_COLS] =
+	int small_world[][] =
 		{{0, 0, 0, 0, 0, 0, 0},	 // Rest of the line with 0s
 		 {0, 1, 1, 1, 1, 1, 0},	 // idem
 		 {0, 1, 1, 1, 1, 1, 0},	 // idem

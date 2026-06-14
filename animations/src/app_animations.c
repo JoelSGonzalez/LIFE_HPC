@@ -1,7 +1,9 @@
-#include <stdio.h>
+#//include <stdio.h>
 #include <string.h>
 #include "animations.h"
 #include "life.h"
+
+#define PATH_SIZE 100
 
 /*
  * Game of life entry point.
@@ -17,11 +19,11 @@ int main()
 
 	int n;
 	int delay_in_seconds;
-	char filename[40];
+	char filename[PATH_SIZE];
 
 	printf("\nFile path (max 34 chars) or insert ENTER: ");
 
-	fgets(filename, 39, stdin);
+	fgets(filename, PATH_SIZE - 1, stdin);
 	filename[strlen(filename) - 1] = '\0';
 	if (strcmp(filename, "") == 0)
 	{
