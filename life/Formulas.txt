@@ -1,9 +1,9 @@
-cell_lives = {M = 19, F = 8}
+cell_lives = {M = 19*4, F = 8}
 
-copy_world = {M = 2*N², F = 0}
+copy_world = {M = 2*N²*4, F = 0}
 
-update_world = {M = (3+9+18+1+cell_lives)*N²+copy_world = 52*N²,
-		F = (15+45+18+cell_lives)*N²+copy_world = 86*N²}
+update_world = {M = (3*8+9*8+18*4+1*4+cell_lives)*N²+copy_world = 260*N² bytes,
+				F = (15+45+18+cell_lives)*N²+copy_world = 86*N² FLOPs}
 
-update_world_n_generations = {M = g*update_world = 52*g*N²,
-			      F = g*update world = 86*g*N²}
+update_world_n_generations = {M = g*update_world = 260*g*N²,
+			 			      F = g*update world = 86*g*N²}	
