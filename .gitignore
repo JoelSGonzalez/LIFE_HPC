@@ -5,7 +5,7 @@ build/
 out/
 err/
 
-# executável (caso queira ignorar também)
+# executaveis
 *.exe
 *.out
 

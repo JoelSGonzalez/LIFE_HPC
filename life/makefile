@@ -14,7 +14,7 @@ GENS = 10 20 50 100 200
 _SRC_FILES = PCAD.c life.c
 SRC_FILES = ${addprefix ${SRC_DIR}/, ${_SRC_FILES}}
 
-TARGETS = compile serial_test
+TARGETS = compile s10_g10_serial s10_g100_serial serial_test
 
 all: ${TARGETS}
 
@@ -25,7 +25,10 @@ compile:
 	${CC} ${CFLAGS} ${SRC_FILES} -o ${BUILD_DIR}/${PROGRAM}
 
 s10_g10_serial:
-	./${BUILD_DIR}/${PROGRAM} -s 10 -g 10 > ${OUT_DIR}/$@.txt 2> ${OUT_DIR}/$@_err.txt
+	./${BUILD_DIR}/${PROGRAM} -s 10 -g 10 -p > ${OUT_DIR}/$@.txt 2> ${ERR_DIR}/$@_err.txt
+
+s10_g100_serial:
+	./${BUILD_DIR}/${PROGRAM} -s 10 -g 100 -p > ${OUT_DIR}/$@.txt 2> ${ERR_DIR}/$@_err.txt
 
 serial_test:
 	@for s in $(SIZES); do \

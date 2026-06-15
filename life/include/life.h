@@ -22,6 +22,7 @@ typedef struct
 {
     size_t size;
     size_t generations;
+	int print;
 } Config;
 
 // More about game of life: https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life

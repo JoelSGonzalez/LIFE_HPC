@@ -24,12 +24,12 @@ unsigned int parse_uint(const char *str)
 
 Config get_config(int argc, char **argv)
 {
-    Config cfg = {0, 0};
+    Config cfg = {0, 0, 0};
     int opt;
 
     opterr = 0;
 
-    while ((opt = getopt(argc, argv, ":s:g:")) != -1)
+    while ((opt = getopt(argc, argv, ":s:g:p")) != -1)
     {
         switch (opt)
         {
@@ -39,6 +39,10 @@ Config get_config(int argc, char **argv)
 
             case 'g':
                 cfg.generations = parse_uint(optarg);
+                break;
+
+            case 'p':
+                cfg.print = 1;
                 break;
 
             case ':':
@@ -123,10 +127,27 @@ int main(int argc, char **argv)
         exit(1);
     }
     
-    start_time = omp_get_wtime();
-    update_world_n_generations(cfg.generations, world, cfg.size, cfg.size, aux, base_rules);
-    finish_time = omp_get_wtime();
-    exec_time = finish_time - start_time;
+    
+    if(!cfg.print)
+    {
+        start_time = omp_get_wtime();
+        update_world_n_generations(cfg.generations, world, cfg.size, cfg.size, aux, base_rules);
+        finish_time = omp_get_wtime();
+        exec_time = finish_time - start_time;
+    }
+    else 
+    {
+        print_world(world, cfg.size, cfg.size);
+        puts("\n");
+        for (int i = 0; i < cfg.generations; i++)
+        {
+            update_world(world, cfg.size, cfg.size, aux, base_rules);
+            print_world(world, cfg.size, cfg.size);
+            puts("\n");
+        }
+    }
+    
+    
     
     free_world(world);
 
