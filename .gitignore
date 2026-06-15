@@ -9,9 +9,6 @@ err/
 *.exe
 *.out
 
-# logs genéricos
-*.txt
-
 # objetos de compilação
 *.o
 *.obj
