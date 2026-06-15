@@ -156,15 +156,15 @@ void update_world(int **world, size_t rows_count, size_t cols_count, int **world
                 {
                     size_t c = (col + j - 1 + cols_count) % cols_count + 1; // 9*(1 Escrita  5 Flops)*(N²)
 
-                    submatrix[i + 1][j + 1] = world[r][c];
+                    submatrix[i + 1][j + 1] = world[r][c]; // 9*(1 Escrita 1 Leitura 2 Flops)*(N²)
                 }
             }
 
-            world_aux[row][col] = cell_lives(submatrix, rule);
+            world_aux[row][col] = cell_lives(submatrix, rule); // (1 Escrita + cell_lives)*(N²)
         }
     }
 
-    copy_world(world, rows_count, cols_count, world_aux);
+    copy_world(world, rows_count, cols_count, world_aux); // (copyworld)
 }
 
 // OLD Update World N Generations
