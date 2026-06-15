@@ -61,7 +61,7 @@ Config get_config(int argc, char **argv)
     return cfg;
 }
 
-int **init_world(size_t size)
+int **init_world(size_t size, int fill)
 {
     size_t n = size + 2; //halo, padding
 
@@ -82,6 +82,8 @@ int **init_world(size_t size)
     {
         world[i] = &data[i * n];
     }
+
+    if (!fill) return world;
 
     srand(SEED);
 
@@ -108,18 +110,29 @@ void free_world(int **world)
 int main(int argc, char **argv)
 {
     Config cfg = get_config(argc, argv);
+    const int base_rules[RULE_SIZE] = {3,2,3};
 
+    int **world = init_world(cfg.size, 1);
+    int **aux = init_world(cfg.size, 0);
 
-    int **world = init_world(cfg.size);
-    if (world != NULL) puts("Inicializou!");
-
-    if(cfg.size <= 100)
+    double start_time, finish_time, exec_time;
+    
+    if (world == NULL||aux==NULL) 
     {
-        printf("Coisa boa!\n");
+        fprintf(stderr, "Failed to initialize\n");
+        exit(1);
     }
-
+    
+    start_time = omp_get_wtime();
+    update_world_n_generations(cfg.generations, world, cfg.size, cfg.size, aux, base_rules);
+    finish_time = omp_get_wtime();
+    exec_time = finish_time - start_time;
+    
     free_world(world);
 
-    puts("TUDO CERTO");
+    puts("\n***SUCESS***\n");
+    printf("World Size = %dx%d\n", cfg.size, cfg.size);
+    printf("Generations = %d\n", cfg.generations);
+    printf("Runtime = %.6lf seconds\n", exec_time);
     return 0;
 }
