@@ -46,6 +46,8 @@ typedef struct
  */
 int cell_lives(const int submatrix[3][3], const int rule[RULE_SIZE]);
 
+int cell_lives_fast(int cell, const int live_cells, const int rules[RULE_SIZE]);
+
 /*
  * Function: clear_world
  * ----------------------------

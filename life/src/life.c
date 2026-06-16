@@ -1,5 +1,6 @@
 #include "life.h"
 
+// OLD cell_lives
 int cell_lives(const int submatrix[3][3], const int rule[RULE_SIZE])
 {
 	int cell = submatrix[1][1];
@@ -18,6 +19,12 @@ int cell_lives(const int submatrix[3][3], const int rule[RULE_SIZE])
 
 	return (cell == 1 && (live_cells >= rule[1] && live_cells <= rule[0])) ||
 		   (cell == 0 && live_cells == rule[2]); // 3 leituras
+}
+// NEW Cell Lives (FAST)
+int cell_lives_fast(int cell, const int live_cells, const int rules[RULE_SIZE])
+{
+    return (cell == 1 && (live_cells >= rules[1] && live_cells <= rules[0])) ||
+		   (cell == 0 && live_cells == rules[2]); // 3 leituras
 }
 
 // OLD Clear World
@@ -87,6 +94,7 @@ int get_cell(const int **world, size_t row, size_t col)
 // NEW Copy World
 void copy_world(int **world1, size_t rows_count, size_t cols_count, int **world2)
 {
+    #pragma omp parallel for schedule(static)
     for (size_t row = 1; row <= rows_count; row++)
     {
         for (size_t col = 1; col <= cols_count; col++)
@@ -141,30 +149,36 @@ void copy_world(int **world1, size_t rows_count, size_t cols_count, int **world2
 // }
 
 // NEW Update World
-void update_world(int **world, size_t rows_count, size_t cols_count, int **world_aux, const int rule[RULE_SIZE])
+void update_world(int **world, size_t rows_count, size_t cols_count,
+                  int **world_aux, const int rules[RULE_SIZE])
 {
+    #pragma omp parallel for schedule(static)
     for (size_t row = 1; row <= rows_count; row++)
     {
         for (size_t col = 1; col <= cols_count; col++)
         {
-            int submatrix[3][3];
+            int live_neighbours = 0;
+            int cell = world[row][col];
 
             for (int i = -1; i <= 1; i++)
             {
-				size_t r = (row + i - 1 + rows_count) % rows_count + 1; // 3*(1 Escritas 5 Flops)*(N²)
+                size_t r = (row + i - 1 + rows_count) % rows_count + 1; // 3*(1 Escritas 5 Flops)*(N²)
+
                 for (int j = -1; j <= 1; j++)
                 {
                     size_t c = (col + j - 1 + cols_count) % cols_count + 1; // 9*(1 Escrita  5 Flops)*(N²)
 
-                    submatrix[i + 1][j + 1] = world[r][c]; // 9*(1 Escrita 1 Leitura 2 Flops)*(N²)
+                    live_neighbours += world[r][c]; // 9*( 1 Leitura 1 Escritas 1 Flop)*(N²) 
                 }
             }
 
-            world_aux[row][col] = cell_lives(submatrix, rule); // (1 Escrita + cell_lives)*(N²)
+            live_neighbours -= cell; // (1 Escrita)*(N²)
+
+            world_aux[row][col] = cell_lives_fast(cell, live_neighbours, rules); // (1 Escrita + clf)*(N²)
         }
     }
 
-    copy_world(world, rows_count, cols_count, world_aux); // (copyworld)
+    copy_world(world, rows_count, cols_count, world_aux);
 }
 
 // OLD Update World N Generations
