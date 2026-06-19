@@ -33,7 +33,6 @@ int cell_lives_fast(int cell, const int live_cells, const int rules[RULE_SIZE])
 // NEW Copy World
 void copy_world(int **world1, size_t rows_count, size_t cols_count, int **world2)
 {
-    #pragma omp parallel for
     for (size_t row = 1; row <= rows_count; row++)
     {
         for (size_t col = 1; col <= cols_count; col++)
@@ -46,39 +45,28 @@ void copy_world(int **world1, size_t rows_count, size_t cols_count, int **world2
 // NEW Update World
 void update_world(int **world, size_t rows_count, size_t cols_count, int **world_aux, const int rules[RULE_SIZE])
 {
-    #pragma omp parallel for
     for (size_t row = 1; row <= rows_count; row++)
     {
         for (size_t col = 1; col <= cols_count; col++)
         {
-            int pre_row = row - 1; // 1FLOP, 1 Escrita
-			if (pre_row == 0)
-				pre_row = rows_count;
+            int live_neighbours = 0;
+            int cell = world[row][col];
 
-			int pos_row = row + 1; // 1FLOP, 1 Escrita
-			if (pos_row == rows_count + 1)
-				pos_row = 1;
+            for (int i = -1; i <= 1; i++)
+            {
+                size_t r = (row + i - 1 + rows_count) % rows_count + 1; // 3*(1 Escritas 5 Flops)*(N²)
 
-			int pre_col = col - 1; // 1FLOP, 1 Escrita
-			if (pre_col == 0)
-				pre_col = cols_count;
+                for (int j = -1; j <= 1; j++)
+                {
+                    size_t c = (col + j - 1 + cols_count) % cols_count + 1; // 9*(1 Escrita  5 Flops)*(N²)
 
-			int pos_col = col + 1; // 1FLOP, 1 Escrita
-			if (pos_col == cols_count + 1)
-				pos_col = 1;
+                    live_neighbours += world[r][c]; // 9*( 1 Leitura 1 Escritas 1 Flop)*(N²) 
+                }
+            }
 
-			int submatrix[3][3];  //18 acessos, 9 escritas, 9 leituras
-			submatrix[0][0] = get_cell(world, pre_row, pre_col);
-			submatrix[0][1] = get_cell(world, pre_row, col);
-			submatrix[0][2] = get_cell(world, pre_row, pos_col);
-			submatrix[1][0] = get_cell(world, row, pre_col);
-			submatrix[1][1] = get_cell(world, row, col);
-			submatrix[1][2] = get_cell(world, row, pos_col);
-			submatrix[2][0] = get_cell(world, pos_row, pre_col);
-			submatrix[2][1] = get_cell(world, pos_row, col);
-			submatrix[2][2] = get_cell(world, pos_row, pos_col);
+            live_neighbours -= cell; // (1 Escrita)*(N²)
 
-			set_cell(world_aux, row, col, cell_lives(submatrix, rule)); // 1 Escrita + Cell_lives
+            world_aux[row][col] = cell_lives_fast(cell, live_neighbours, rules); // (1 Escrita + clf)*(N²)
         }
     }
 
@@ -187,42 +175,39 @@ int **init_world(size_t size, int fill)
         fprintf(stderr, "Failed to alloc WORLD!");
         exit(1);
     }
+    int *data = calloc(n * n, sizeof(int));
+    if (!data) 
+    {
+        fprintf(stderr, "Failed to alloc DATA");
+        exit(1);
+    }
 
     for (size_t i = 0; i < n; i++)
     {
-        matriz[i] = malloc(colunas * sizeof(int));
-
-        if (matriz[i] == NULL)
-        {
-            fprintf(stderr, "Failed to alloc WORLD!");
-            exit(1);
-        }
+        world[i] = &data[i * n];
     }
 
-    if (fill)
-    {
-        rand(SEED);
+    if (!fill) return world;
 
-        for (size_t i = 1; i <= size; i++)
+    srand(SEED);
+
+    for (size_t i = 1; i <= size; i++)
+    {
+        for (size_t j = 1; j <= size; j++)
         {
-            for (size_t j = 1; j <= size; j++)
-            {
-                world[i][j] = rand() & 1;
-            }
+            world[i][j] = rand() & 1;
         }
     }
 
     return world;
 }
 
-void free_world(int **world, uint8_t size)
+void free_world(int **world)
 {
     if (!world)
         return;
 
-    for (size_t i = 0; i < linhas; i++)
-        free(world[i]);
-
+    free(world[0]); 
     free(world);
 }
 
@@ -261,6 +246,8 @@ int main(int argc, char **argv)
             puts("\n");
         }
     }
+    
+    
     
     free_world(world);
 

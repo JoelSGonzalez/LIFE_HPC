@@ -20,6 +20,7 @@ int cell_lives(const int submatrix[3][3], const int rule[RULE_SIZE])
 	return (cell == 1 && (live_cells >= rule[1] && live_cells <= rule[0])) ||
 		   (cell == 0 && live_cells == rule[2]); // 3 leituras
 }
+
 // NEW Cell Lives (FAST)
 int cell_lives_fast(int cell, const int live_cells, const int rules[RULE_SIZE])
 {
