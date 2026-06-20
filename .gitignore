@@ -8,6 +8,7 @@ err/
 # executaveis
 *.exe
 *.out
+*.txt
 
 # objetos de compilação
 *.o

@@ -23,11 +23,37 @@ typedef struct
 	int print;
 } Config;
 
-// NEW Cell Lives (FAST)
-int cell_lives_fast(int cell, const int live_cells, const int rules[RULE_SIZE])
+// NEW Cell Lives
+int cell_lives(const int submatrix[3][3], const int rules[RULE_SIZE])
 {
-    return (cell == 1 && (live_cells >= rules[1] && live_cells <= rules[0])) ||
+	int cell = submatrix[1][1];
+	int live_cells = 0;
+
+	for (int row = 0; row < 3; row++)
+	{
+		for (int col = 0; col < 3; col++)
+		{
+			if (col == 1 && row == 1)
+				continue;
+
+			live_cells += submatrix[row][col]; // 8 leituras 8 escritas 8 FLOPS 
+		}
+	}
+
+	return (cell == 1 && (live_cells >= rules[1] && live_cells <= rules[0])) ||
 		   (cell == 0 && live_cells == rules[2]); // 3 leituras
+}
+
+// NEW Set Cell
+void set_cell(int **world, size_t row, size_t col, int value)
+{
+    world[row][col] = value; // 1 Escrita
+}
+
+// NEW Get Cell
+int get_cell(int **world, size_t row, size_t col)
+{
+    return world[row][col]; // 1 Leitura
 }
 
 // NEW Copy World
@@ -76,7 +102,7 @@ void update_world(int **world, size_t rows_count, size_t cols_count, int **world
 			submatrix[2][1] = get_cell(world, pos_row, col);
 			submatrix[2][2] = get_cell(world, pos_row, pos_col);
 
-			set_cell(world_aux, row, col, cell_lives(submatrix, rule)); // 1 Escrita + Cell_lives
+			set_cell(world_aux, row, col, cell_lives(submatrix, rules)); // 1 Escrita + Cell_lives
         }
     }
 
@@ -84,13 +110,13 @@ void update_world(int **world, size_t rows_count, size_t cols_count, int **world
 }
 
 // NEW Update World N Generations
-void update_world_n_generations(size_t n, int **world, size_t rows_count, size_t cols_count, int **world_aux, const int rule[RULE_SIZE])
+void update_world_n_generations(size_t n, int **world, size_t rows_count, size_t cols_count, int **world_aux, const int rules[RULE_SIZE])
 {
     if (n <= 0)
         return;
 
     for (int i = 0; i < n; i++)
-        update_world(world, rows_count, cols_count, world_aux, rule);
+        update_world(world, rows_count, cols_count, world_aux, rules);
 }
 
 void fprint_world(int **world, size_t rows_count, size_t cols_count, FILE *__restrict__ __stream)
@@ -188,9 +214,9 @@ int **init_world(size_t size, int fill)
 
     for (size_t i = 0; i < n; i++)
     {
-        matriz[i] = malloc(colunas * sizeof(int));
+        world[i] = malloc(n * sizeof(int));
 
-        if (matriz[i] == NULL)
+        if (world[i] == NULL)
         {
             fprintf(stderr, "Failed to alloc WORLD!");
             exit(1);
@@ -199,7 +225,7 @@ int **init_world(size_t size, int fill)
 
     if (fill)
     {
-        rand(SEED);
+        srand(SEED);
 
         for (size_t i = 1; i <= size; i++)
         {
@@ -218,7 +244,7 @@ void free_world(int **world, size_t size)
     if (!world)
         return;
 
-    for (size_t i = 0; i < size; i++)
+    for (size_t i = 0; i < size+2; i++)
         free(world[i]);
 
     free(world);
