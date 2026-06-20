@@ -215,7 +215,7 @@ int **init_world(size_t size, int fill)
     return world;
 }
 
-void free_world(int **world, uint8_t size)
+void free_world(int **world, size_t size)
 {
     if (!world)
         return;
@@ -262,7 +262,7 @@ int main(int argc, char **argv)
         }
     }
     
-    free_world(world);
+    free_world(world, cfg.size);
 
     puts("\n***SUCESS***\n");
     printf("World Size = %dx%d\n", cfg.size, cfg.size);
