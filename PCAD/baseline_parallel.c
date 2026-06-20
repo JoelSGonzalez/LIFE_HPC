@@ -59,7 +59,7 @@ int get_cell(int **world, size_t row, size_t col)
 // NEW Copy World
 void copy_world(int **world1, size_t rows_count, size_t cols_count, int **world2)
 {
-    #pragma omp parallel for
+    #pragma omp parallel for schedule(runtime)
     for (size_t row = 1; row <= rows_count; row++)
     {
         for (size_t col = 1; col <= cols_count; col++)
@@ -72,7 +72,7 @@ void copy_world(int **world1, size_t rows_count, size_t cols_count, int **world2
 // NEW Update World
 void update_world(int **world, size_t rows_count, size_t cols_count, int **world_aux, const int rules[RULE_SIZE])
 {
-    #pragma omp parallel for
+    #pragma omp parallel for schedule(runtime)
     for (size_t row = 1; row <= rows_count; row++)
     {
         for (size_t col = 1; col <= cols_count; col++)
