@@ -50,7 +50,7 @@ run_$(1)_$(2)_$(3): $$(OUTPUT)
 		OMP_PROC_BIND=$(1) \
 		OMP_PLACES=$(2) \
 		OMP_SCHEDULE=$(3) \
-		./$$(OUTPUT) -s 50 -g 50 >> run_$(1)_$(2)_$(3).txt; \
+		./$$(OUTPUT) -s 4000 -g 100 >> run_$(1)_$(2)_$(3).txt; \
 		echo >> run_$(1)_$(2)_$(3).txt;\
 	done
 endef
