@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <limits.h>
+#include<stdint.h>
 
 #define RULE_SIZE 3
 #define VIRTUAL_MAX_COLS 71
@@ -59,6 +60,7 @@ int get_cell(int **world, size_t row, size_t col)
 // NEW Copy World
 void copy_world(int **world1, size_t rows_count, size_t cols_count, int **world2)
 {
+    #pragma omp parallel for schedule(runtime)
     for (size_t row = 1; row <= rows_count; row++)
     {
         for (size_t col = 1; col <= cols_count; col++)
@@ -71,6 +73,7 @@ void copy_world(int **world1, size_t rows_count, size_t cols_count, int **world2
 // NEW Update World
 void update_world(int **world, size_t rows_count, size_t cols_count, int **world_aux, const int rules[RULE_SIZE])
 {
+    #pragma omp parallel for schedule(runtime)
     for (size_t row = 1; row <= rows_count; row++)
     {
         for (size_t col = 1; col <= cols_count; col++)
@@ -214,7 +217,7 @@ int **init_world(size_t size, int fill)
 
     for (size_t i = 0; i < n; i++)
     {
-        world[i] = malloc(n * sizeof(int));
+        world[i] = calloc(n ,sizeof(int));
 
         if (world[i] == NULL)
         {
@@ -285,12 +288,21 @@ int main(int argc, char **argv)
             puts("\n");
         }
     }
-    
+
+    uint64_t checksum = 0;
+    for(int i = 0; i < cfg.size+2; i++)
+    {
+        for(int j = 0; j < cfg.size+2; j++)
+        {
+            checksum += *(uint32_t*)&world[i][j];
+        }
+    }
+
     free_world(world, cfg.size);
 
-    puts("\n***SUCESS***\n");
-    printf("World Size = %dx%d\n", cfg.size, cfg.size);
-    printf("Generations = %d\n", cfg.generations);
-    printf("Runtime = %.6lf seconds\n", exec_time);
+    // puts("\n***SUCESS***\n");
+    // printf("World Size = %dx%d\n", cfg.size, cfg.size);
+    // printf("Generations = %d\n", cfg.generations);
+    printf("%.6lf", exec_time);
     return 0;
 }
